@@ -1,0 +1,11 @@
+libraries
+Rich : it is a popular library that is used for 
+Color Text: Formats fonts using simple tags.
+Pretty Print: Cleanly styles complex data structures.
+Progress Bars: Shows visual percentages and spinners.
+Data Tables: Builds organized rows and columns.
+Markdown: Renders written documents with styling.
+Code Highlight: Formats scripts with theme syntax.
+Nice Errors: Replaces ugly crashes with colorful traceback
+
+
