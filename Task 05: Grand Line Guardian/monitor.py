@@ -1,4 +1,4 @@
-import os, select, sys, termios, time, tty, psutil
+import select, sys, termios, time, tty, psutil
 from rich import box
 from rich.console import Console
 from rich.live import Live
@@ -65,26 +65,18 @@ def build_view(processes, selected_index, message, sys_cpu, sys_mem):
 
 
 def read_key():
-    """Non-blocking keyboard reader."""
+    """Non-blocking keyboard reader (letters only)."""
     if not select.select([sys.stdin], [], [], 0.0)[0]:
         return None
+    
     ch = sys.stdin.read(1)
-    if ch == '\x1b':
-        time.sleep(0.005)
-        seq = ""
-        while select.select([sys.stdin], [], [], 0.0)[0]:
-            seq += sys.stdin.read(1)
-            if len(seq) >= 5:
-                break
-        if seq.endswith('A') or seq in ('[A', 'OA'): return 'up'
-        if seq.endswith('B') or seq in ('[B', 'OB'): return 'down'
-        return None
-
     key = ch.lower()
-    if key in ('q', '\x03'): return 'q'
+    
+    if key in ('q', '\x03'): return 'q'  # 'q' or Ctrl+C
     if key == 'w': return 'up'
     if key == 's': return 'down'
     if key == 'k': return 'k'
+    
     return None
 
 
