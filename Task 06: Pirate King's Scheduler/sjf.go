@@ -8,69 +8,35 @@ func CalculateSJF(processes []Process) ([]ExecutionSlice, []Process) {
 	currentTime := 0
 	n := len(processes)
 	isCompleted := make([]bool, n)
-	completedCount := 0
 
-	for completedCount < n {
+	for i := 0; i < n; i++ {
 		minIndex := -1
-
-		for i, p := range processes {
-			if isCompleted[i] || p.ArrivalTime > currentTime {
-				continue
-			}
-
-			if minIndex == -1 || p.BurstTime < processes[minIndex].BurstTime {
-				minIndex = i
-				continue
-			}
-
-			// Tie-breaker: earlier arrival time; if arrival times match, input order is preserved
-			if p.BurstTime == processes[minIndex].BurstTime && p.ArrivalTime < processes[minIndex].ArrivalTime {
-				minIndex = i
+		for j, p := range processes {
+			if !isCompleted[j] && p.ArrivalTime <= currentTime {
+				if minIndex == -1 || p.BurstTime < processes[minIndex].BurstTime {
+					minIndex = j
+				}
 			}
 		}
 
 		if minIndex == -1 {
-			// CPU is idle; find the next earliest process arrival
-			nextArrival := -1
-			for i, p := range processes {
-				if isCompleted[i] {
-					continue
-				}
-				if nextArrival == -1 || p.ArrivalTime < processes[nextArrival].ArrivalTime {
-					nextArrival = i
-				}
-			}
-
-			if nextArrival != -1 && processes[nextArrival].ArrivalTime > currentTime {
-				slices = append(slices, ExecutionSlice{
-					ProcessID: "IDLE",
-					StartTime: currentTime,
-					EndTime:   processes[nextArrival].ArrivalTime,
-				})
-				currentTime = processes[nextArrival].ArrivalTime
-			}
+			currentTime++
 			continue
 		}
 
-		p := &processes[minIndex]
 		startTime := currentTime
-		endTime := currentTime + p.BurstTime
+		endTime := currentTime + processes[minIndex].BurstTime
 
-		if startTime < endTime {
-			slices = append(slices, ExecutionSlice{
-				ProcessID: p.ID,
-				StartTime: startTime,
-				EndTime:   endTime,
-			})
-		}
+		slices = append(slices, ExecutionSlice{
+			ProcessID: processes[minIndex].ID,
+			StartTime: startTime,
+			EndTime:   endTime,
+		})
 
-		p.CompletionTime = endTime
-		p.TurnaroundTime = p.CompletionTime - p.ArrivalTime
-		p.WaitingTime = p.TurnaroundTime - p.BurstTime
-
+		processes[minIndex].TurnaroundTime = endTime - processes[minIndex].ArrivalTime
+		processes[minIndex].WaitingTime = processes[minIndex].TurnaroundTime - processes[minIndex].BurstTime
 		isCompleted[minIndex] = true
-		completedCount++
-		completed = append(completed, *p)
+		completed = append(completed, processes[minIndex])
 		currentTime = endTime
 	}
 

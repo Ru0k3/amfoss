@@ -3,113 +3,69 @@ package main
 import "sort"
 
 func CalculateRR(processes []Process, quantum int) ([]ExecutionSlice, []Process) {
-	if quantum <= 0 {
-		quantum = 1
-	}
-
-	// Stable sort by arrival time to preserve input order on ties
 	sort.SliceStable(processes, func(i, j int) bool {
 		return processes[i].ArrivalTime < processes[j].ArrivalTime
 	})
 
-	var completed []Process
 	var slices []ExecutionSlice
-	var queue []int
-
-	n := len(processes)
+	var completed []Process
+	queue := []int{}
 	currentTime := 0
-	inQueue := make([]bool, n)
-	completedCount := 0
+	n := len(processes)
+	remainingTime := make([]int, n)
+	for i := range processes {
+		remainingTime[i] = processes[i].BurstTime
+	}
 
-	// Enqueue processes arriving at time 0
-	for i, p := range processes {
-		if p.ArrivalTime <= currentTime {
+	for i := 0; i < n; i++ {
+		if processes[i].ArrivalTime <= currentTime {
 			queue = append(queue, i)
-			inQueue[i] = true
 		}
 	}
 
-	for completedCount < n {
-		if len(queue) == 0 {
-			nextArrival := -1
-			for i, p := range processes {
-				if inQueue[i] || p.RemainingTime <= 0 {
-					continue
-				}
-				if nextArrival == -1 || p.ArrivalTime < processes[nextArrival].ArrivalTime {
-					nextArrival = i
-				}
-			}
-
-			if nextArrival == -1 {
-				break
-			}
-
-			arrivalTime := processes[nextArrival].ArrivalTime
-			if arrivalTime > currentTime {
-				slices = append(slices, ExecutionSlice{
-					ProcessID: "IDLE",
-					StartTime: currentTime,
-					EndTime:   arrivalTime,
-				})
-				currentTime = arrivalTime
-			}
-
-			for i, p := range processes {
-				if !inQueue[i] && p.ArrivalTime <= currentTime && p.RemainingTime > 0 {
-					queue = append(queue, i)
-					inQueue[i] = true
-				}
-			}
-		}
-
-		if len(queue) == 0 {
-			break
-		}
-
+	for len(queue) > 0 {
 		idx := queue[0]
 		queue = queue[1:]
-		p := &processes[idx]
 
 		execTime := quantum
-		if p.RemainingTime < quantum {
-			execTime = p.RemainingTime
+		if remainingTime[idx] < quantum {
+			execTime = remainingTime[idx]
 		}
 
 		startTime := currentTime
 		endTime := currentTime + execTime
 
-		if startTime < endTime {
-			slices = append(slices, ExecutionSlice{
-				ProcessID: p.ID,
-				StartTime: startTime,
-				EndTime:   endTime,
-			})
-		}
+		slices = append(slices, ExecutionSlice{
+			ProcessID: processes[idx].ID,
+			StartTime: startTime,
+			EndTime:   endTime,
+		})
 
-		p.RemainingTime -= execTime
+		remainingTime[idx] -= execTime
 		currentTime = endTime
 
-		// 1. Enqueue newly arrived processes during execution (OS Rule: New arrivals before preempted)
-		for i, pOther := range processes {
-			if !inQueue[i] && pOther.ArrivalTime <= currentTime && pOther.RemainingTime > 0 {
-				queue = append(queue, i)
-				inQueue[i] = true
+		for i := 0; i < n; i++ {
+			if i != idx && processes[i].ArrivalTime <= currentTime && remainingTime[i] > 0 {
+				alreadyInQueue := false
+				for _, q := range queue {
+					if q == i {
+						alreadyInQueue = true
+						break
+					}
+				}
+				if !alreadyInQueue {
+					queue = append(queue, i)
+				}
 			}
 		}
 
-		// 2. Re-enqueue preempted process if it still has remaining burst time
-		if p.RemainingTime > 0 {
+		if remainingTime[idx] > 0 {
 			queue = append(queue, idx)
-			continue
+		} else {
+			processes[idx].TurnaroundTime = currentTime - processes[idx].ArrivalTime
+			processes[idx].WaitingTime = processes[idx].TurnaroundTime - processes[idx].BurstTime
+			completed = append(completed, processes[idx])
 		}
-
-		// Process finished
-		p.CompletionTime = currentTime
-		p.TurnaroundTime = p.CompletionTime - p.ArrivalTime
-		p.WaitingTime = p.TurnaroundTime - p.BurstTime
-		completed = append(completed, *p)
-		completedCount++
 	}
 
 	sort.SliceStable(completed, func(i, j int) bool {

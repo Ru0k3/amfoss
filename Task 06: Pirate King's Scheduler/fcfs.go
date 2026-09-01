@@ -3,7 +3,6 @@ package main
 import "sort"
 
 func CalculateFCFS(processes []Process) ([]ExecutionSlice, []Process) {
-	// Stable sort by arrival time to preserve input order for ties
 	sort.SliceStable(processes, func(i, j int) bool {
 		return processes[i].ArrivalTime < processes[j].ArrivalTime
 	})
@@ -12,31 +11,21 @@ func CalculateFCFS(processes []Process) ([]ExecutionSlice, []Process) {
 	currentTime := 0
 
 	for i := range processes {
-		p := &processes[i]
-
-		if currentTime < p.ArrivalTime {
-			slices = append(slices, ExecutionSlice{
-				ProcessID: "IDLE",
-				StartTime: currentTime,
-				EndTime:   p.ArrivalTime,
-			})
-			currentTime = p.ArrivalTime
+		if currentTime < processes[i].ArrivalTime {
+			currentTime = processes[i].ArrivalTime
 		}
 
 		startTime := currentTime
-		endTime := currentTime + p.BurstTime
+		endTime := currentTime + processes[i].BurstTime
 
-		if startTime < endTime {
-			slices = append(slices, ExecutionSlice{
-				ProcessID: p.ID,
-				StartTime: startTime,
-				EndTime:   endTime,
-			})
-		}
+		slices = append(slices, ExecutionSlice{
+			ProcessID: processes[i].ID,
+			StartTime: startTime,
+			EndTime:   endTime,
+		})
 
-		p.CompletionTime = endTime
-		p.TurnaroundTime = p.CompletionTime - p.ArrivalTime
-		p.WaitingTime = p.TurnaroundTime - p.BurstTime
+		processes[i].TurnaroundTime = endTime - processes[i].ArrivalTime
+		processes[i].WaitingTime = processes[i].TurnaroundTime - processes[i].BurstTime
 		currentTime = endTime
 	}
 

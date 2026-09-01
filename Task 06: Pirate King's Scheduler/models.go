@@ -4,8 +4,6 @@ type Process struct {
 	ID             string
 	ArrivalTime    int
 	BurstTime      int
-	RemainingTime  int
-	CompletionTime int
 	WaitingTime    int
 	TurnaroundTime int
 }
