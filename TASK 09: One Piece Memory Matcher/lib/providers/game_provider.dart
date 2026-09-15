@@ -1,12 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../constants.dart';
 import '../models/card_model.dart';
 
-/// Holds the game state for the memory matching game: the deck of cards,
-/// flip/match bookkeeping, the move counter and elapsed time, and the
-/// persisted best score.
 class GameProvider with ChangeNotifier {
   List<CardModel> cards = [];
   List<int> flippedIndices = [];
@@ -16,22 +12,14 @@ class GameProvider with ChangeNotifier {
   bool isGameOver = false;
   Timer? _timer;
 
-  /// How long a mismatched pair stays face-up before flipping back.
-  /// Tests inject a shorter duration so they don't wait in real time.
-  final Duration flipBackDelay;
-
   final List<String> _imageAssets = [
-    'assets/images/luffy.png',
-    'assets/images/zoro.png',
-    'assets/images/nami.png',
-    'assets/images/sanji.png',
-    'assets/images/chopper.png',
-    'assets/images/robin.png',
-    'assets/images/ace.png',
-    'assets/images/law.png',
+    'assets/images/luffy.png', 'assets/images/zoro.png',
+    'assets/images/nami.png', 'assets/images/sanji.png',
+    'assets/images/chopper.png', 'assets/images/robin.png',
+    'assets/images/ace.png', 'assets/images/law.png',
   ];
 
-  GameProvider({this.flipBackDelay = defaultFlipBackDelay}) {
+  GameProvider() {
     _loadPreferences();
     initializeGame();
   }
@@ -94,12 +82,11 @@ class GameProvider with ChangeNotifier {
       cards[firstIndex].isMatched = true;
       cards[secondIndex].isMatched = true;
       flippedIndices = [];
-      
       if (cards.every((card) => card.isMatched)) {
         _endGame();
       }
     } else {
-      Future.delayed(flipBackDelay, () {
+      Future.delayed(const Duration(milliseconds: 1000), () {
         cards[firstIndex].isFlipped = false;
         cards[secondIndex].isFlipped = false;
         flippedIndices = [];
@@ -112,8 +99,8 @@ class GameProvider with ChangeNotifier {
   void _endGame() async {
     isGameOver = true;
     _timer?.cancel();
-    
     int currentScore = calculateScore();
+
     if (currentScore > bestScore) {
       bestScore = currentScore;
       final prefs = await SharedPreferences.getInstance();
@@ -124,11 +111,7 @@ class GameProvider with ChangeNotifier {
 
   int calculateScore() {
     if (moves == 0) return 0;
-    // Score = (pairs * points per pair) - move penalty - time penalty.
-    // The pair count is derived from the deck so it never goes stale.
-    final int score = (cards.length ~/ 2) * scorePerPair -
-        moves * scoreMovePenalty -
-        secondsElapsed * scoreTimePenalty;
+    final int score = (cards.length ~/ 2) * 100 - moves * 10 - secondsElapsed * 2;
     return score > 0 ? score : 0;
   }
 

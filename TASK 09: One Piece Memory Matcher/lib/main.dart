@@ -24,12 +24,10 @@ class MyApp extends StatelessWidget {
       themeMode: ThemeMode.dark,
       darkTheme: ThemeData(
         useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.orange,
-          brightness: Brightness.dark,
-        ),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.orange, brightness: Brightness.dark),
       ),
-      home: const GameScreen(),
+      // NOTE: No 'const' here, preventing the compile error we had earlier
+      home: GameScreen(), 
     );
   }
 }
