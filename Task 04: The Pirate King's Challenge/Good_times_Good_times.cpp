@@ -1,37 +1,33 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-int countDigits(long long x){
-    int digits = 0;
-    while(x > 0){
-        digits++;
-        x /= 10;
-    }
-    return digits;
-}
-
-long long buildMultiplier(int len){
-    long long y = 1;
-    for(int i = 0; i < len; i++) y *= 10;
-    y += 1;
-    return y;
-}
-
-void solve(){
-    long long x;
-    cin >> x;
-    int len = countDigits(x);
-    long long y = buildMultiplier(len);
-    cout << y << "\n";
-}
-
-int main(){
-    ios_base::sync_with_stdio(false);
-    cin.tie(NULL);
+int main() {
     int t;
     cin >> t;
-    while(t--){
-        solve();
+
+    while (t > 0) {
+        t--;
+
+        long long x;
+        cin >> x;
+
+        // count the digits of x.
+        int d = 0;
+        long long temp = x;
+        while (temp > 0) {
+            d++;
+            temp = temp / 10;
+        }
+
+        // build y = 10^d + 1.
+        long long y = 1;
+        for (int i = 0; i < d; i++) {
+            y = y * 10;
+        }
+        y = y + 1;
+
+        cout << y << "\n";
     }
+
     return 0;
 }
