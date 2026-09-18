@@ -1,34 +1,39 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-long long computeLargestPile(vector<long long>& a){
-    vector<long long> stack;
-    for(long long x : a){
-        long long current = x;
-        while(!stack.empty() && stack.back() > current){
-            current += stack.back();
-            stack.pop_back();
-        }
-        stack.push_back(current);
-    }
-    return stack.back();
-}
-
-void solve(){
-    int n;
-    cin >> n;
-    vector<long long> a(n);
-    for(int i = 0; i < n; i++) cin >> a[i];
-    cout << computeLargestPile(a) << "\n";
-}
-
-int main(){
-    ios_base::sync_with_stdio(false);
-    cin.tie(NULL);
+int main() {
     int t;
     cin >> t;
-    while(t--){
-        solve();
+
+    while (t > 0) {
+        t--;
+
+        int n;
+        cin >> n;
+
+        vector<long long> a(n);
+        for (int i = 0; i < n; i++) {
+            cin >> a[i];
+        }
+
+
+        vector<long long> stackArr(n);
+        int top = 0;
+
+        for (int i = 0; i < n; i++) {
+            long long current = a[i];
+
+            while (top > 0 && stackArr[top - 1] > current) {
+                current = current + stackArr[top - 1];
+                top--;
+            }
+
+            stackArr[top] = current;
+            top++;
+        }
+
+        cout << stackArr[top - 1] << "\n";
     }
+
     return 0;
 }
