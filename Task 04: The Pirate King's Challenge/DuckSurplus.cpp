@@ -16,14 +16,14 @@ int main() {
             cin >> a[i];
         }
 
-
         vector<long long> stackArr(n);
         int top = 0;
 
         for (int i = 0; i < n; i++) {
             long long current = a[i];
 
-            while (top > 0 && stackArr[top - 1] > current) {
+            if (top > 0 && stackArr[top - 1] > current) {
+                // merge into the previous team only, once
                 current = current + stackArr[top - 1];
                 top--;
             }
