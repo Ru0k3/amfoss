@@ -1,33 +1,39 @@
 package main
 
-import "sort"
-
 func CalculateFCFS(processes []Process) ([]ExecutionSlice, []Process) {
-	sort.SliceStable(processes, func(i, j int) bool {
-		return processes[i].ArrivalTime < processes[j].ArrivalTime
-	})
+    var slices []ExecutionSlice
+    cpuTime := 0
 
-	var slices []ExecutionSlice
-	currentTime := 0
+    for i := 0; i < len(processes); i++ {
+        for j := i + 1; j < len(processes); j++ {
+            if processes[i].ArrivalTime > processes[j].ArrivalTime {
+                processes[i], processes[j] = processes[j], processes[i]
+            }
+        }
+    }
 
-	for i := range processes {
-		if currentTime < processes[i].ArrivalTime {
-			currentTime = processes[i].ArrivalTime
-		}
+    for i := 0; i < len(processes); i++ {
+        p := processes[i]
 
-		startTime := currentTime
-		endTime := currentTime + processes[i].BurstTime
+        if cpuTime < p.ArrivalTime {
+            cpuTime = p.ArrivalTime
+        }
 
-		slices = append(slices, ExecutionSlice{
-			ProcessID: processes[i].ID,
-			StartTime: startTime,
-			EndTime:   endTime,
-		})
+        startTime := cpuTime
+        endTime := cpuTime + p.BurstTime
 
-		processes[i].TurnaroundTime = endTime - processes[i].ArrivalTime
-		processes[i].WaitingTime = processes[i].TurnaroundTime - processes[i].BurstTime
-		currentTime = endTime
-	}
+        slices = append(slices, ExecutionSlice{
+            ProcessID: p.ID,
+            StartTime: startTime,
+            EndTime:   endTime,
+        })
 
-	return slices, processes
+        p.TurnaroundTime = endTime - p.ArrivalTime
+        p.WaitingTime = p.TurnaroundTime - p.BurstTime
+        
+        processes[i] = p
+        cpuTime = endTime
+    }
+
+    return slices, processes
 }
