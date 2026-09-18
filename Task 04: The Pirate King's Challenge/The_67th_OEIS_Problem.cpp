@@ -1,58 +1,55 @@
-import java.util.*;
+#include <bits/stdc++.h>
+using namespace std;
 
-public class Main {
+vector<long long> generatePrimes(int count){
+    int limit = 130000; 
+    vector<bool> isComposite(limit + 1, false);
+    vector<long long> primes;
 
-    static final int LIMIT = 110000;
+    for(int i = 2; i <= limit; i++){
+        if(!isComposite[i]){
+            primes.push_back(i);
+            if((int)primes.size() == count) break;
 
-    public static void main(String[] args) {
-        Scanner sc = new Scanner(System.in);
-
-        boolean[] isPrime = new boolean[LIMIT + 1];
-        Arrays.fill(isPrime, true);
-        isPrime[0] = false;
-        isPrime[1] = false;
-
-        for (int i = 2; i * i <= LIMIT; i++) {
-            if (isPrime[i]) {
-                for (int j = i * i; j <= LIMIT; j += i) {
-                    isPrime[j] = false;
-                }
+            for(long long j = (long long)i * i; j <= limit; j += i){
+                isComposite[j] = true;
             }
         }
-
-        ArrayList<Integer> primes = new ArrayList<>();
-        for (int i = 2; i <= LIMIT; i++) {
-            if (isPrime[i]) {
-                primes.add(i);
-            }
-        }
-
-        int t = sc.nextInt();
-
-        while (t-- > 0) {
-            int n = sc.nextInt();
-
-            if (n == 2) {
-                System.out.println("1 2");
-                continue;
-            }
-
-            StringBuilder ans = new StringBuilder();
-
-            ans.append("1 ");
-            ans.append("2 ");
-
-            for (int i = 0; i < n - 2; i++) {
-                long val = 1L * primes.get(i) * primes.get(i + 1);
-                ans.append(val);
-
-                if (i != n - 3)
-                    ans.append(" ");
-            }
-
-            System.out.println(ans);
-        }
-
-        sc.close();
     }
+    return primes;
+}
+
+vector<long long> buildSequence(int n, vector<long long>& primes){
+    vector<long long> a(n + 1); 
+    a[1] = primes[0];
+    for(int i = 2; i <= n - 1; i++){
+        a[i] = primes[i - 2] * primes[i - 1];
+    }
+    if(n >= 2){
+        a[n] = primes[n - 2];
+    }
+    return a;
+}
+
+void solve(vector<long long>& primes){
+    int n;
+    cin >> n;
+
+    vector<long long> a = buildSequence(n, primes);
+
+    for(int i = 1; i <= n; i++){
+        cout << a[i] << " \n"[i == n];
+    }
+}
+
+int main(){
+    ios_base::sync_with_stdio(false);
+    cin.tie(NULL);
+    vector<long long> primes = generatePrimes(10000);
+    int t;
+    cin >> t;
+    while(t--){
+        solve(primes);
+    }
+    return 0;
 }
